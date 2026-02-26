@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from collections import defaultdict
 
 # Testovací data: Jméno, Osobní číslo, Předmět
 # Takto vypadají data načtená například z CSV souboru nebo databáze.
@@ -22,14 +23,27 @@ def get_unique_subjects(data: list[tuple[str, str, str]]) -> set[str]:
     """
     Vrátí množinu unikátních předmětů.
     """
-    return set() # PLACEHOLDER
+    return {student[2] for student in data} # PLACEHOLDER
 
 def group_students_by_subject(data: list[tuple[str, str, str]]) -> dict[str, list[Student]]:
     """
     Vrátí slovník, kde klíčem je předmět a hodnotou seznam studentů (instancí třídy Student),
     kteří jsou na předmět zapsáni.
     """
-    return {} # PLACEHOLDER
+    zpracovany_dict: dict[str, list] = {}
+    """
+    S defaultdict nemusím kontrolovat, jestli klíč v seznamu existuje
+    """
+    dict_s_default: defaultdict[str, list] = defaultdict(list)
+    for student in data:
+        predmet = student[2]
+        dict_s_default[predmet].append(Student(student[0], student[1]))
+    for student in data:
+        predmet = student[2]
+        if predmet not in zpracovany_dict:
+            zpracovany_dict[predmet] = []
+        zpracovany_dict[predmet].append(Student(student[0], student[1]))
+    return zpracovany_dict # PLACEHOLDER
 
 def get_unique_students(data: list[tuple[str, str, str]]) -> set[Student]:
     """
@@ -37,7 +51,7 @@ def get_unique_students(data: list[tuple[str, str, str]]) -> set[Student]:
     Pozor: Data obsahují duplicity (jeden student může mít více předmětů).
     Cílem je získat množinu fyzických osob.
     """
-    return set() # PLACEHOLDER
+    return {Student(student[0], student[1]) for student in data} # PLACEHOLDER
 
 def main() -> None:
     print("--- ÚKOL 1: Unikátní předměty ---")
