@@ -19,11 +19,21 @@ def get_delay(period: int, spread_factor: float) -> int:
 
 
 def worker_tick(worker: Worker) -> None:
-    pass
+    if worker.timer > 0:
+        worker.timer -= 1
+        return
+    if len(worker.source) == 0:
+        return
+    worker.dest.append(worker.source.popleft())
+    worker.timer = get_delay(worker.period, worker.spread_factor)
+
 
 
 def print_snapshot(time: int, queues: list[tuple[str, deque]]) -> None:
-    pass
+    print(f"Aktuální čas: {time} s, {time // 3600} h")
+    for name, queue in queues:
+        print(f"{name}: ({len(queue)})")
+
 
 
 def main() -> None:
@@ -31,10 +41,18 @@ def main() -> None:
     people_in_the_city = deque(list(range(people_number)))
 
     # 1. Vytvoření front
-
+    gate_queue = deque()
+    vege_queue = deque()
+    cashier_queue = deque()
+    final_queue = deque()
 
     # Seznam pro výpis (jméno, fronta)
-    queues_to_observe = [
+    queues_to_observe: list[tuple[str, deque]] = [
+        ("Street", people_in_the_city),
+        ("Gate", gate_queue),
+        ("Vege", vege_queue),
+        ("Cashier", cashier_queue),
+        ("Final", final_queue)
     ]
 
     # Parametry simulace (střední hodnoty časů v sekundách)
@@ -45,9 +63,23 @@ def main() -> None:
 
     # 2. Vytvoření pracovníků (Worker)
     # Worker(jméno, zdroj, cíl, perioda, spread_factor)
-
+    street_worker = Worker("Street Worker", people_in_the_city, gate_queue, day_m, 0.1)
+    gate_worker = Worker("Gate Worker", gate_queue, vege_queue, gate_m, 0.2)
+    vege_worker = Worker("Vege Worker", vege_queue, cashier_queue, vege_m, 0.5)
+    cashier_worker = Worker("Cashier Worker", cashier_queue, final_queue, final_m, 0.3)
+    cashier2_worker = Worker("Cashier 2 Worker", cashier_queue, final_queue, final_m, 0.2)
     # 3. Hlavní smyčka simulace
+    print_snapshot(0, queues_to_observe)
 
+    for time in range(7201):
+        worker_tick(street_worker)
+        worker_tick(gate_worker)
+        worker_tick(vege_worker)
+        worker_tick(cashier_worker)
+
+        if time % 60 == 0:
+            print_snapshot(time, queues_to_observe)
+            print()
 
 if __name__ == "__main__":
     main()
